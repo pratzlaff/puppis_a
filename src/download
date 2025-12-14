@@ -1,0 +1,26 @@
+#! /bin/bash
+
+set -eo pipefail
+
+SCRIPTDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+. "$SCRIPTDIR/functions.sh"
+
+[ $# -ge 1 ] && obsids="$@" || obsids=$(obsids)
+
+. ~/.bash_aliases
+shopt -s expand_aliases
+
+ciao
+cd $datadir
+
+for obsid in $obsids; do
+    obsid=$((10#$obsid))
+    o5str=$(printf %05d $obsid)
+    [ -d $o5str ] && continue
+
+    download_chandra_obsid $obsid
+
+    [ $o5str = $obsid ] || mv $obsid $o5str
+done
+
+cd -

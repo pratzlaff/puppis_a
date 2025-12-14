@@ -1,0 +1,29 @@
+#! /bin/bash
+
+set -eo pipefail
+
+SCRIPTDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+. "$SCRIPTDIR/functions.sh"
+
+[ $# -ge 1 ] && obsids="$@" || obsids=$(obsids)
+
+imagedir="$datadir/images"
+mkdir -p "$imagedir"
+
+for obsid in $obsids; do
+    obsid=$(printf %05d $((10#$obsid)))
+
+    imagefile="$imagedir/$obsid.jpg"
+    evt2=$(\ls $datadir/$obsid/repro/hrcf${obsid}_repro_evt2.fits)
+    ds9 \
+	"$evt2" \
+	-geometry 1024x1024 \
+	-scale mode 99.5 \
+	-colorbar yes \
+	-colorbar numerics yes \
+	-bin factor 16 \
+	-zoom 0.75 \
+	-pan to 08:21:56 -43:01:10 wcs \
+	-saveimage "$imagedir/$obsid.jpg" \
+	-exit
+done

@@ -1,0 +1,29 @@
+#! /bin/bash
+
+set -eo pipefail
+
+SCRIPTDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+. "$SCRIPTDIR/functions.sh"
+
+[ $# -ge 1 ] && obsids="$@" || obsids=$(obsids)
+
+. ~/.bash_aliases
+shopt -s expand_aliases
+
+ciao
+
+. "$SCRIPTDIR/tmppdir.sh"
+
+for obsid in $obsids; do
+    obsid=$(printf %05d $((10#"$obsid")))
+    [ -d "$datadir/$obsid/repro" ] || {
+	punlearn ardlib
+	punlearn chandra_repro
+	chandra_repro \
+	    "$datadir/$obsid" \
+	    "$datadir/$obsid/repro" \
+	    verbose=3 \
+	    clob+
+    }
+done
+
