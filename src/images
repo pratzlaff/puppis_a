@@ -7,23 +7,74 @@ SCRIPTDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 [ $# -ge 1 ] && obsids="$@" || obsids=$(obsids)
 
+. ~/.bash_aliases
+shopt -s expand_aliases
+
+ciao
+
 imagedir="$datadir/images"
-mkdir -p "$imagedir"
+mkdir -p "$imagedir/fits"
 
 for obsid in $obsids; do
     obsid=$(printf %05d $((10#$obsid)))
 
     imagefile="$imagedir/$obsid.jpg"
     evt2=$(\ls $datadir/$obsid/repro/hrcf${obsid}_repro_evt2.fits)
-    ds9 \
+    false && ds9 \
 	"$evt2" \
-	-geometry 1024x1024 \
+	-geometry 1200x1200 \
 	-scale mode 99.5 \
 	-colorbar yes \
 	-colorbar numerics yes \
 	-bin factor 16 \
 	-zoom 0.75 \
-	-pan to 08:21:56 -43:01:10 wcs \
-	-saveimage "$imagedir/$obsid.jpg" \
+	-pan to 08:21:57.3 -43:00:17 wcs fk5 \
+	-saveimage "$imagedir/$obsid.png" \
 	-exit
+
+    fits="$imagedir/fits/$obsid.fits"
+
+    # ds9 is doing something really weird with WCS
+    false && {
+	ds9 \
+	    "$evt2" \
+	    -bin factor 16 \
+	    -geometry 1100x1200 \
+	    -pan to 08:21:57.3 -43:00:17 wcs fk5 \
+	    -saveimage "$fits" \
+	    -exit
+
+	dmhedit "$fits" none add cdelt1 -0.0005857776
+	dmhedit "$fits" none add cdelt2 0.0005857776
+
+	crpix1=$(dmlist "$fits" header,raw | grep CRPIX1 | perl -anle 'print $F[5]')
+	crpix2=$(dmlist "$fits" header,raw | grep CRPIX2 | perl -anle 'print $F[5]')
+
+	dmhedit "$fits" none add crpix1 $(echo "$crpix1 + 513" | bc)
+	dmhedit "$fits" none add crpix2 $(echo "$crpix2 + 513" | bc)
+    }
+
+
+    # This doesn't put WCS information in the output
+    false && {
+	dmcopy "$evt2"'[eqpos=box(125.489583,-43.004361,0.75,0.75)][bin eqpos=0.0005857776]' "$fits" cl+
+    }
+
+    true && {
+	read x y <<<$(src_pos "$evt2")
+	hw=9000
+	xmin=$(echo "$x-$hw" | bc)
+	xmax=$(echo "$x+$hw" | bc)
+	ymin=$(echo "$y-$hw" | bc)
+	ymax=$(echo "$y+$hw" | bc)
+	dmcopy "$evt2[bin x=$xmin:$xmax:16,y=$ymin:$ymax:16]" "$fits" cl+
+    }
+
 done
+
+true && {
+    cd "$imagedir"
+    tar czvf ./fits.tar.gz ./fits
+    rm -rf fits
+    cd -
+}

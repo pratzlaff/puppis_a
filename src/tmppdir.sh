@@ -21,7 +21,7 @@ if [[ ! "$pdir" || ! -d "$pdir" ]]; then
 fi
 
 # deletes the temp directory
-function cleanup {      
+function cleanup {
     \rm -rf "$pdir"
     \echo "Deleted temp working directory $pdir" 1>&2
 }
