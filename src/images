@@ -13,12 +13,11 @@ shopt -s expand_aliases
 ciao
 
 imagedir="$datadir/images"
-mkdir -p "$imagedir/fits"
+mkdir -p "$imagedir"/{png,fits}
 
 for obsid in $obsids; do
     obsid=$(printf %05d $((10#$obsid)))
 
-    imagefile="$imagedir/$obsid.jpg"
     evt2=$(\ls $datadir/$obsid/repro/hrcf${obsid}_repro_evt2.fits)
     false && ds9 \
 	"$evt2" \
@@ -60,7 +59,7 @@ for obsid in $obsids; do
 	dmcopy "$evt2"'[eqpos=box(125.489583,-43.004361,0.75,0.75)][bin eqpos=0.0005857776]' "$fits" cl+
     }
 
-    true && {
+    false && {
 	read x y <<<$(src_pos "$evt2")
 	hw=9000
 	xmin=$(echo "$x-$hw" | bc)
@@ -70,9 +69,20 @@ for obsid in $obsids; do
 	dmcopy "$evt2[bin x=$xmin:$xmax:16,y=$ymin:$ymax:16]" "$fits" cl+
     }
 
+    png="$imagedir/png/$obsid.png"
+    true && ds9 \
+	"$fits" \
+	-geometry 850x1125 \
+	-scale mode 99.5 \
+	-colorbar yes \
+	-colorbar numerics yes \
+	-zoom 0.75 \
+	-saveimage "$png" \
+	-exit
+    continue
 done
 
-true && {
+false && {
     cd "$imagedir"
     tar czvf ./fits.tar.gz ./fits
     rm -rf fits
