@@ -24,18 +24,4 @@ src_pos()
 
     /data/legs/rpete/flight/wcs_test/wcs2pix_wcstools \
 	"$evt" "$src_ra" "$src_dec"
-    return
-
-    # This is just wrong
-    tcrvl19=$(wcs_val "$evt" TCRVL19)
-    tcrpx19=$(wcs_val "$evt" TCRPX19)
-    tcdlt19=$(wcs_val "$evt" TCDLT19)
-
-    tcrvl20=$(wcs_val "$evt" TCRVL20)
-    tcrpx20=$(wcs_val "$evt" TCRPX20)
-    tcdlt20=$(wcs_val "$evt" TCDLT20)
-
-    src_px_x=$(perl -le "print( ($src_ra-($tcrvl19))/$tcdlt19+$tcrpx19 )")
-    src_px_y=$(perl -le "print( ($src_dec-($tcrvl20))/$tcdlt20+$tcrpx20 )")
-    echo $src_px_x $src_px_y
 }
