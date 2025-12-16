@@ -22,6 +22,11 @@ src_pos()
     local src_ra=125.489583
     local src_dec=-43.004361
 
+    /data/legs/rpete/flight/wcs_test/wcs2pix_wcstools \
+	"$evt" "$src_ra" "$src_dec"
+    return
+
+    # This is just wrong
     tcrvl19=$(wcs_val "$evt" TCRVL19)
     tcrpx19=$(wcs_val "$evt" TCRPX19)
     tcdlt19=$(wcs_val "$evt" TCDLT19)
