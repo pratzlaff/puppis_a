@@ -59,9 +59,9 @@ for obsid in $obsids; do
 	dmcopy "$evt2"'[eqpos=box(125.489583,-43.004361,0.75,0.75)][bin eqpos=0.0005857776]' "$fits" cl+
     }
 
-    false && {
+    true && {
 	read x y <<<$(src_pos "$evt2")
-	hw=9000
+	hw=10000
 	xmin=$(echo "$x-$hw" | bc)
 	xmax=$(echo "$x+$hw" | bc)
 	ymin=$(echo "$y-$hw" | bc)
@@ -72,7 +72,7 @@ for obsid in $obsids; do
     png="$imagedir/png/$obsid.png"
     true && ds9 \
 	"$fits" \
-	-geometry 850x1125 \
+	-geometry 940x1220 \
 	-scale mode 99.5 \
 	-colorbar yes \
 	-colorbar numerics yes \
@@ -82,7 +82,7 @@ for obsid in $obsids; do
     continue
 done
 
-false && {
+true && {
     cd "$imagedir"
     tar czvf ./fits.tar.gz ./fits
     rm -rf fits
